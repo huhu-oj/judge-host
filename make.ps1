@@ -1,2 +1,2 @@
-$env:CONF_FILE_PATH= "$PWD\configs\config.yaml"
+$env:CONF_FILE_PATH= "$PWD\config.yaml"
 go run main.go
