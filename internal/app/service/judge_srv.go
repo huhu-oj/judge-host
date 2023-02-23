@@ -51,7 +51,7 @@ func judge0(standardIos []*model.OjStandardIo,path string) {
 		testCase := testCase
 			go func() {
 				cmd := exec.Command("go", "run", path)
-				cmd.Dir = "C:\\Users\\Administrator\\Desktop\\go-study\\gin-gorm-oj\\internal\\code\\code-user\\"
+				cmd.Dir = "cmd/go-web-template/main.go"
 				var out, stderr bytes.Buffer
 				cmd.Stderr = &stderr
 				cmd.Stdout = &out

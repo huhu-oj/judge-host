@@ -1,0 +1,19 @@
+info:
+  contact: {}
+paths:
+  /api/v1/judge:
+    get:
+      parameters:
+      - description: 问题id
+        in: query
+        name: problemId
+        type: integer
+      responses:
+        "200":
+          description: '{"code":"200","data":""}'
+          schema:
+            type: string
+      summary: 判题
+      tags:
+      - 判题
+swagger: "2.0"

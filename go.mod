@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/gzip v0.0.3
-	github.com/gin-gonic/gin v1.7.4
+	github.com/gin-gonic/gin v1.9.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/gops v0.3.20
 	github.com/google/wire v0.5.0
@@ -20,6 +20,9 @@ require (
 
 require (
 	github.com/pkg/errors v0.9.1
+	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
+	github.com/swaggo/http-swagger v1.3.3 // indirect
+	github.com/swaggo/swag v1.8.1
 	gorm.io/gen v0.3.21
 	gorm.io/plugin/dbresolver v1.4.1
 )

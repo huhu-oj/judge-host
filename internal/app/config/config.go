@@ -78,6 +78,7 @@ type GZIP struct {
 func LoadConfig() {
 	once.Do(func() {
 		configPath := os.Getenv("CONF_FILE_PATH")
+		configPath = "config.yaml"
 		if len(configPath) == 0 {
 			panic("not found env variable: CONF_FILE_PATH ")
 		}
