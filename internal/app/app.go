@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/menggggggg/go-web-template/internal/app/config"
+	"github.com/menggggggg/go-web-template/internal/app/dao"
 	"github.com/menggggggg/go-web-template/pkg/logger"
 )
 
@@ -29,6 +30,8 @@ func Init(ctx context.Context) (func(), error) {
 	// 初始化HTTP服务
 	httpServerCleanFunc := InitHTTPServer(ctx, injector.Engine)
 
+	InitGen()
+	dao.SetDefault(InitGormDB())
 	return func() {
 		httpServerCleanFunc()
 		monitorCleanFunc()

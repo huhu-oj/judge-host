@@ -19,7 +19,7 @@ type IRouter interface {
 
 // Router 路由管理器
 type Router struct {
-	UserAPI *api.UserAPI
+	JudgeAPI *api.JudgeAPI
 } // end
 
 // Register 注册路由
@@ -41,13 +41,10 @@ func (a *Router) RegisterAPI(app *gin.Engine) {
 
 	v1 := g.Group("/v1")
 	{
-		user := v1.Group("/users")
+		judge := v1.Group("/judge") 
 		{
-			user.POST("", a.UserAPI.Create)
-			user.GET("", a.UserAPI.GetByName)
-			user.GET("/:userId", a.UserAPI.Get)
-			user.PUT("/:userId", a.UserAPI.Update)
-			user.DELETE("/:userId", a.UserAPI.Delete)
+			judge.POST("",a.JudgeAPI.Judge)
+			judge.GET("",a.JudgeAPI.Judge)
 		}
 	} // v1 end
 }

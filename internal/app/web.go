@@ -13,7 +13,7 @@ import (
 
 func InitGinEngine(r router.IRouter) *gin.Engine {
 	gin.SetMode(config.C.RunMode)
-
+	
 	app := gin.New()
 
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {

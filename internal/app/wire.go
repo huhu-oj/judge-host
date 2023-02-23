@@ -8,7 +8,7 @@ package app
 import (
 	"github.com/google/wire"
 	"github.com/menggggggg/go-web-template/internal/app/api"
-	"github.com/menggggggg/go-web-template/internal/app/dao"
+	// "github.com/menggggggg/go-web-template/internal/app/dao"
 	"github.com/menggggggg/go-web-template/internal/app/router"
 	"github.com/menggggggg/go-web-template/internal/app/service"
 )
@@ -17,11 +17,11 @@ import (
 func BuildInjector() *Injector {
 	wire.Build(
 		router.RouterSet,
-		dao.DaoSet,
+		// dao.DaoSet,
 		service.ServiceSet,
 		api.APISet,
 		InitGinEngine,
-		InitGormDB,
+		// InitGormDB,
 		InjectorSet,
 	)
 	return new(Injector)
