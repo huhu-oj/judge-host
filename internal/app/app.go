@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -13,7 +15,10 @@ import (
 
 	"github.com/menggggggg/go-web-template/internal/app/config"
 	"github.com/menggggggg/go-web-template/internal/app/dao"
+	"github.com/menggggggg/go-web-template/internal/app/model"
 	"github.com/menggggggg/go-web-template/pkg/logger"
+	"github.com/spf13/viper"
+	"github.com/robfig/cron"
 )
 
 func Init(ctx context.Context) (func(), error) {
@@ -35,10 +40,48 @@ func Init(ctx context.Context) (func(), error) {
 
 	InitGen()
 	dao.SetDefault(InitGormDB())
+	//定时发送心跳包
+	SendHealth()
+
 	return func() {
 		httpServerCleanFunc()
 		monitorCleanFunc()
 	}, nil
+}
+func SendHealth() {
+	c := cron.New()
+	c.AddFunc("*/5 * * * *",func ()  {
+		//获取地址
+		serverApi := config.C.API.ManagerServer
+		//发送心跳
+		configInfo := model.ConfigInfo{
+			Id: config.C.ConfigInfo.Id,
+			Name: config.C.ConfigInfo.Name,
+			SupportLanguage: config.C.ConfigInfo.SupportLanguage,
+			Enabled: true,
+			URL: config.C.ConfigInfo.URL,
+		}
+		requestBody, _ := json.Marshal(configInfo)
+		// logger.Debug("准备发送心跳"+string(requestBody))
+		
+		r, err := http.Post(serverApi,"application/json", bytes.NewReader(requestBody))
+		if err !=nil {
+			logger.Error("后端连接失败"+err.Error())
+		}
+		responseBody, err := ioutil.ReadAll(r.Body) 
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		responseConfig := model.ConfigInfo{}
+		json.Unmarshal(responseBody,&responseConfig)
+		// logger.Debug(responseConfig)
+		viper.Set("configInfo",responseConfig)
+		viper.WriteConfig()
+		viper.WatchConfig()
+	})
+	c.Start()
+
+	
 }
 func InitSwagger() {
 	cmd := exec.Command("swag", "init")
@@ -61,6 +104,7 @@ func InitHTTPServer(ctx context.Context, handler http.Handler) func() {
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  30 * time.Second,
 	}
+	
 
 	go func() {
 		logger.Infof("HTTP server is running at %s.", cfg.Addr)

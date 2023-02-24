@@ -22,8 +22,19 @@ type Config struct {
 	Monitor Monitor `yaml:"monitor"`
 	CORS    CORS    `yaml:"cores"`
 	GZIP    GZIP    `yaml:"gzip"`
+	API     API     `yaml:"API"`
+	ConfigInfo ConfigInfo `yaml:"configInfo"`
 }
-
+type API struct {
+	ManagerServer string `yaml:"managerServer"`
+	Test string `yaml:"test"`
+}
+type ConfigInfo struct {
+	Id int `yaml:"id"`
+	Name string `yaml:"name"`
+	SupportLanguage string `yaml:"supportLanguage"`
+	URL string `yaml:"url"`
+}
 type Log struct {
 	Level  string `yaml:"level"`
 	Format string `yaml:"format"`

@@ -4,8 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"github.com/menggggggg/go-web-template/internal/app/api"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 var _ IRouter = (*Router)(nil)
@@ -54,5 +52,4 @@ func (a *Router) RegisterAPI(app *gin.Engine) {
 			common.GET("",a.CommonAPI.Config)
 		}
 	} // v1 end
-	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
