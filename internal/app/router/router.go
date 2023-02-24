@@ -22,6 +22,7 @@ type IRouter interface {
 // Router 路由管理器
 type Router struct {
 	JudgeAPI *api.JudgeAPI
+	CommonAPI *api.CommonAPI
 } // end
 
 // Register 注册路由
@@ -47,6 +48,10 @@ func (a *Router) RegisterAPI(app *gin.Engine) {
 		{
 			judge.POST("", a.JudgeAPI.Judge)
 			judge.GET("", a.JudgeAPI.Judge)
+		}
+		common := v1.Group("/config")
+		{
+			common.GET("",a.CommonAPI.Config)
 		}
 	} // v1 end
 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

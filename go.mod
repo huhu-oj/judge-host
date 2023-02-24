@@ -19,9 +19,9 @@ require (
 )
 
 require (
+	github.com/go-openapi/spec v0.20.6 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
-	github.com/swaggo/http-swagger v1.3.3 // indirect
+	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe
 	github.com/swaggo/swag v1.8.1
 	gorm.io/gen v0.3.21
 	gorm.io/plugin/dbresolver v1.4.1

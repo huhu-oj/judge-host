@@ -1,10 +1,12 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"syscall"
 	"time"
@@ -20,7 +22,8 @@ func Init(ctx context.Context) (func(), error) {
 
 	// 初始化日志
 	InitLogger()
-
+	//初始化swagger
+	InitSwagger()
 	// 初始化服务运行监控
 	monitorCleanFunc := InitMonitor(ctx)
 
@@ -37,7 +40,17 @@ func Init(ctx context.Context) (func(), error) {
 		monitorCleanFunc()
 	}, nil
 }
-
+func InitSwagger() {
+	cmd := exec.Command("swag", "init")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = os.Stderr
+	err := cmd.Start()
+	if err != nil {
+		logger.Fatal(err)
+	}
+	logger.Debug(out.String())
+}
 // InitHTTPServer 初始化http服务
 func InitHTTPServer(ctx context.Context, handler http.Handler) func() {
 	cfg := config.C.HTTP
