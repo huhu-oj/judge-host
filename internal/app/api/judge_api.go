@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"github.com/menggggggg/go-web-template/internal/app/service"
-	"github.com/menggggggg/go-web-template/pkg/errors"
 	"github.com/menggggggg/go-web-template/internal/app/model"
 )
 
@@ -27,12 +26,8 @@ func (a *JudgeAPI) Judge(c *gin.Context) {
 	answerRecord := &model.AnswerRecord{}
 	c.BindJSON(&answerRecord)
 	// fmt.Println(answerRecord)
-	resp, err := a.JudgeSrv.Judge(c, answerRecord)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.WrapWithInternalServerError(err))
-		return
-	}
-	c.JSON(http.StatusOK, resp)
+	a.JudgeSrv.Judge(c, answerRecord)
+	c.JSON(http.StatusOK, answerRecord)
 }
 
 

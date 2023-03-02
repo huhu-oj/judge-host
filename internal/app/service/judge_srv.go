@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 	"sync"
 
 	"github.com/google/wire"
@@ -27,23 +28,54 @@ const (
 	python = "python"
 	golang = "go"
 )
-func (a *JudgeSrv) Judge(ctx context.Context, request *model.AnswerRecord) ([]*model.OjStandardIo, error) {
+// type Executor string
+// type language struct {
+// 	executor Executor
+// 	ext string
+// 	compile
+// }
+func (a *JudgeSrv) Judge(ctx context.Context, request *model.AnswerRecord) {
 	//设置输入输出
 	ioList, err := dao.OjStandardIo.Where(dao.OjStandardIo.ProblemID.Eq(request.ProblemId)).Find()
 	if err != nil {
-		return nil, err
+		log.Fatalln("读取数据库失败"+err.Error())
+		return 
 	}
-	judge0(ioList,"main.go")
+	// judge0(ioList,"main.go")
 
+	//保存成临时文件
+	f1, err := saveTempFile("","code","py",request.Code)
+	if err != nil {
+		log.Fatalln("保存代码文件失败"+err.Error())
+		return 
+	}
 	//编译
 	// complie()
 	//执行 loop
 		//判断对错
-	
+	for _, standardio := range ioList {
+		//执行
+		out,stderr := execCode(python,f1.Name(),standardio.Input)
+		if stderr.Len() != 0 {
+			//有错误
+			request.Error = stderr.String()
+			return
+		}
+		formatOut :=strings.ReplaceAll(out.String(),"\n","")
+		//对比输出
+		if(strings.Compare(formatOut,standardio.Output) == 0) {
+			request.PassNum++
+		} else {
+			//不相等
+			request.Error = fmt.Sprintf("输入：%v\n期望输出：%v\n实际输出：%v",standardio.Input,standardio.Output,formatOut)
+			request.NotPassNum = len(ioList)-request.PassNum
+			request.ExecuteResultId = 2
+			return
+		}
+		request.ExecuteResultId = 1
+	}
 	//统计结果
 
-	//返回结果
-	return nil, nil
 }
 func  (a *JudgeSrv) Test(request *model.AnswerRecord){
 	//保存成临时文件
@@ -54,7 +86,12 @@ func  (a *JudgeSrv) Test(request *model.AnswerRecord){
 	}
 
 	//编译
-	
+	//javac file
+	// f2, err1 := compile() 
+	// if err1 != nil {
+	// 	log.Fatalln("生成可执行文件失败"+err1.Error())
+	// 	return 
+	// }
 	//执行
 	// cmd := exec.Command("go", "run", f1.Name())
 	out,stderr := execCode(python,f1.Name(),request.Input)

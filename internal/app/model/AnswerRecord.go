@@ -6,7 +6,7 @@ type AnswerRecord struct {
 	Input string
 	Log string
 	Error string
-	LanguageId int64
+	LanguageId int
 	PassNum int
 	NotPassNum int
 	ExecuteResultId int
