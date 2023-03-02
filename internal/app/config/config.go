@@ -24,6 +24,10 @@ type Config struct {
 	GZIP    GZIP    `yaml:"gzip"`
 	API     API     `yaml:"API"`
 	ConfigInfo ConfigInfo `yaml:"configInfo"`
+	Judge Judge `yaml:"judge"`
+}
+type Judge struct {
+	ExecDir string `yaml:"execDir"`
 }
 type API struct {
 	ManagerServer string `yaml:"managerServer"`

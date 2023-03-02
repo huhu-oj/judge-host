@@ -5,9 +5,12 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 	"sync"
 
 	"github.com/google/wire"
@@ -19,17 +22,116 @@ var JudgeSet = wire.NewSet(wire.Struct(new(JudgeSrv), "*"))
 
 type JudgeSrv struct {
 }
+const (
+	cpp = "cpp"
+	java = "java"
+	python = "python"
+	golang = "go"
+)
+// type Executor string
+// type language struct {
+// 	executor Executor
+// 	ext string
+// 	compile
+// }
+func (a *JudgeSrv) Judge(ctx context.Context, request *model.AnswerRecord) {
+	//设置输入输出
+	ioList, err := dao.OjStandardIo.Where(dao.OjStandardIo.ProblemID.Eq(request.ProblemId)).Find()
+	if err != nil {
+		log.Fatalln("读取数据库失败"+err.Error())
+		return 
+	}
+	// judge0(ioList,"main.go")
 
-func (a *JudgeSrv) Judge(ctx context.Context, request int64) ([]*model.OjStandardIo, error) {
-	ioList, err := dao.OjStandardIo.Where(dao.OjStandardIo.ProblemID.Eq(request)).Find()
+	//保存成临时文件
+	f1, err := saveTempFile("","code","py",request.Code)
+	if err != nil {
+		log.Fatalln("保存代码文件失败"+err.Error())
+		return 
+	}
+	//编译
+	// complie()
+	//执行 loop
+		//判断对错
+	for _, standardio := range ioList {
+		//执行
+		out,stderr := execCode(python,f1.Name(),standardio.Input)
+		if stderr.Len() != 0 {
+			//有错误
+			request.Error = stderr.String()
+			return
+		}
+		formatOut :=strings.ReplaceAll(out.String(),"\n","")
+		//对比输出
+		if(strings.Compare(formatOut,standardio.Output) == 0) {
+			request.PassNum++
+		} else {
+			//不相等
+			request.Error = fmt.Sprintf("输入：%v\n期望输出：%v\n实际输出：%v",standardio.Input,standardio.Output,formatOut)
+			request.NotPassNum = len(ioList)-request.PassNum
+			request.ExecuteResultId = 2
+			return
+		}
+		request.ExecuteResultId = 1
+	}
+	//统计结果
+
+}
+func  (a *JudgeSrv) Test(request *model.AnswerRecord){
+	//保存成临时文件
+	f1, err := saveTempFile("","code","py",request.Code)
+	if err != nil {
+		log.Fatalln("保存代码文件失败"+err.Error())
+		return 
+	}
+
+	//编译
+	//javac file
+	// f2, err1 := compile() 
+	// if err1 != nil {
+	// 	log.Fatalln("生成可执行文件失败"+err1.Error())
+	// 	return 
+	// }
+	//执行
+	// cmd := exec.Command("go", "run", f1.Name())
+	out,stderr := execCode(python,f1.Name(),request.Input)
+	//包装结果
+	request.Log = out.String()
+	request.Error = stderr.String()
+	//删除缓存文件
+	defer func() {
+		f1.Close()
+        os.Remove(f1.Name())
+	}()
+}
+
+func saveTempFile(tempdir string,filename string, ext string, content string) (*os.File,error) {
+	file, err := ioutil.TempFile(tempdir, fmt.Sprintf("%v.*.%v",filename,ext))
 	if err != nil {
 		return nil, err
 	}
-	judge0(ioList,"main.go")
-	
-	return nil, nil
-}
+	err = ioutil.WriteFile(file.Name(), []byte(content), 0666)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
 
+}
+func execCode(executor string, execFilePath string, input string) (bytes.Buffer,bytes.Buffer){
+	cmd := exec.Command(executor, execFilePath)
+	var out, stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = &out
+	stdinPipe, err := cmd.StdinPipe()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	io.WriteString(stdinPipe, input+"\n")
+	if err := cmd.Run(); err != nil {
+		log.Println(err, stderr.String())
+	}
+	return out,stderr
+}
 func judge0(standardIos []*model.OjStandardIo,path string) {
 	// 答案错误的channel
 	WA := make(chan int)

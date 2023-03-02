@@ -19,6 +19,7 @@ type CommonAPI struct {
 // @Success 200 {string} json "{"code":"200","data":""}"
 // @Router /api/v1/config [get]
 func (a *CommonAPI) Config(c *gin.Context) {
+	//接受后端新的配置
 	c.JSON(http.StatusOK, gin.H {
 
 	})

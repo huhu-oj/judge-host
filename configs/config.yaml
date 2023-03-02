@@ -1,5 +1,5 @@
 runMode: debug
-swagger: false
+swagger: true
 log:
   level: debug
 http:
@@ -21,3 +21,6 @@ monitor:
   enable: true
   addr: ":6060"
   configDir: ""
+
+judge:
+  execDir: D:\judgeTemp

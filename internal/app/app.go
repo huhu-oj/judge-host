@@ -17,8 +17,8 @@ import (
 	"github.com/menggggggg/go-web-template/internal/app/dao"
 	"github.com/menggggggg/go-web-template/internal/app/model"
 	"github.com/menggggggg/go-web-template/pkg/logger"
-	"github.com/robfig/cron"
 	"github.com/spf13/viper"
+	"github.com/robfig/cron"
 )
 
 func Init(ctx context.Context) (func(), error) {
@@ -41,7 +41,7 @@ func Init(ctx context.Context) (func(), error) {
 	InitGen()
 	dao.SetDefault(InitGormDB())
 	//定时发送心跳包
-	SendHealth()
+	// SendHealth()
 
 	return func() {
 		httpServerCleanFunc()
@@ -55,8 +55,8 @@ func SendHealth() {
 		serverApi := config.C.API.ManagerServer
 		//发送心跳
 		configInfo := model.ConfigInfo{
-			Id:              config.C.ConfigInfo.Id,
-			Name:            config.C.ConfigInfo.Name,
+			// Id: config.C.ConfigInfo.Id,
+			Name: config.C.ConfigInfo.Name,
 			SupportLanguage: config.C.ConfigInfo.SupportLanguage,
 			Enabled:         true,
 			URL:             config.C.ConfigInfo.URL,
@@ -69,19 +69,20 @@ func SendHealth() {
 			logger.Error("后端连接失败" + err.Error())
 			return
 		}
-		responseBody, err := ioutil.ReadAll(r.Body)
+		_, err = ioutil.ReadAll(r.Body)
 		if err != nil {
 			logger.Error(err.Error())
 			return
 		}
-		responseConfig := model.ConfigInfo{}
-		json.Unmarshal(responseBody, &responseConfig)
-		logger.Debug(responseConfig)
-		viper.Set("configInfo", responseConfig)
-		viper.WatchConfig()
-		viper.WriteConfig()
+		// responseConfig := model.ConfigInfo{}
+		// json.Unmarshal(responseBody,&responseConfig)
+		// // logger.Debug(responseConfig)
+		// viper.Set("configInfo",responseConfig)
+		// viper.WriteConfig()
+		// viper.WatchConfig()
 	})
 	c.Start()
+
 
 }
 func InitSwagger() {
@@ -95,7 +96,6 @@ func InitSwagger() {
 	}
 	logger.Debug(out.String())
 }
-
 // InitHTTPServer 初始化http服务
 func InitHTTPServer(ctx context.Context, handler http.Handler) func() {
 	cfg := config.C.HTTP
@@ -106,6 +106,7 @@ func InitHTTPServer(ctx context.Context, handler http.Handler) func() {
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  30 * time.Second,
 	}
+
 
 	go func() {
 		logger.Infof("HTTP server is running at %s.", cfg.Addr)
