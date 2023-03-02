@@ -5,7 +5,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"runtime"
 	"sync"
@@ -19,17 +21,80 @@ var JudgeSet = wire.NewSet(wire.Struct(new(JudgeSrv), "*"))
 
 type JudgeSrv struct {
 }
-
-func (a *JudgeSrv) Judge(ctx context.Context, request int64) ([]*model.OjStandardIo, error) {
-	ioList, err := dao.OjStandardIo.Where(dao.OjStandardIo.ProblemID.Eq(request)).Find()
+const (
+	cpp = "cpp"
+	java = "java"
+	python = "python"
+	golang = "go"
+)
+func (a *JudgeSrv) Judge(ctx context.Context, request *model.AnswerRecord) ([]*model.OjStandardIo, error) {
+	//设置输入输出
+	ioList, err := dao.OjStandardIo.Where(dao.OjStandardIo.ProblemID.Eq(request.ProblemId)).Find()
 	if err != nil {
 		return nil, err
 	}
 	judge0(ioList,"main.go")
+
+	//编译
+	// complie()
+	//执行 loop
+		//判断对错
 	
+	//统计结果
+
+	//返回结果
 	return nil, nil
 }
+func  (a *JudgeSrv) Test(request *model.AnswerRecord){
+	//保存成临时文件
+	f1, err := saveTempFile("","code","py",request.Code)
+	if err != nil {
+		log.Fatalln("保存代码文件失败"+err.Error())
+		return 
+	}
 
+	//编译
+	
+	//执行
+	// cmd := exec.Command("go", "run", f1.Name())
+	out,stderr := execCode(python,f1.Name(),request.Input)
+	//包装结果
+	request.Log = out.String()
+	request.Error = stderr.String()
+	//删除缓存文件
+	defer func() {
+		f1.Close()
+        os.Remove(f1.Name())
+	}()
+}
+
+func saveTempFile(tempdir string,filename string, ext string, content string) (*os.File,error) {
+	file, err := ioutil.TempFile(tempdir, fmt.Sprintf("%v.*.%v",filename,ext))
+	if err != nil {
+		return nil, err
+	}
+	err = ioutil.WriteFile(file.Name(), []byte(content), 0666)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
+
+}
+func execCode(executor string, execFilePath string, input string) (bytes.Buffer,bytes.Buffer){
+	cmd := exec.Command(executor, execFilePath)
+	var out, stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = &out
+	stdinPipe, err := cmd.StdinPipe()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	io.WriteString(stdinPipe, input+"\n")
+	if err := cmd.Run(); err != nil {
+		log.Println(err, stderr.String())
+	}
+	return out,stderr
+}
 func judge0(standardIos []*model.OjStandardIo,path string) {
 	// 答案错误的channel
 	WA := make(chan int)

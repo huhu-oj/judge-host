@@ -41,7 +41,7 @@ func Init(ctx context.Context) (func(), error) {
 	InitGen()
 	dao.SetDefault(InitGormDB())
 	//定时发送心跳包
-	SendHealth()
+	// SendHealth()
 
 	return func() {
 		httpServerCleanFunc()
