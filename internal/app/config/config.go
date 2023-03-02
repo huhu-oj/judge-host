@@ -27,7 +27,6 @@ type Config struct {
 }
 type API struct {
 	ManagerServer string `yaml:"managerServer"`
-	Test string `yaml:"test"`
 }
 type ConfigInfo struct {
 	Id int `yaml:"id"`

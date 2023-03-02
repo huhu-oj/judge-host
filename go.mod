@@ -21,8 +21,7 @@ require (
 require (
 	github.com/go-openapi/spec v0.20.6 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/robfig/cron v1.2.0 // indirect
-	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe
+	github.com/robfig/cron v1.2.0
 	github.com/swaggo/swag v1.8.1
 	gorm.io/gen v0.3.21
 	gorm.io/plugin/dbresolver v1.4.1
