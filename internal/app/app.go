@@ -55,7 +55,7 @@ func SendHealth() {
 		serverApi := config.C.API.ManagerServer
 		//发送心跳
 		configInfo := model.ConfigInfo{
-			Id: config.C.ConfigInfo.Id,
+			// Id: config.C.ConfigInfo.Id,
 			Name: config.C.ConfigInfo.Name,
 			SupportLanguage: config.C.ConfigInfo.SupportLanguage,
 			Enabled: true,
@@ -68,16 +68,16 @@ func SendHealth() {
 		if err !=nil {
 			logger.Error("后端连接失败"+err.Error())
 		}
-		responseBody, err := ioutil.ReadAll(r.Body) 
+		_, err = ioutil.ReadAll(r.Body) 
 		if err != nil {
 			logger.Error(err.Error())
 		}
-		responseConfig := model.ConfigInfo{}
-		json.Unmarshal(responseBody,&responseConfig)
-		// logger.Debug(responseConfig)
-		viper.Set("configInfo",responseConfig)
-		viper.WriteConfig()
-		viper.WatchConfig()
+		// responseConfig := model.ConfigInfo{}
+		// json.Unmarshal(responseBody,&responseConfig)
+		// // logger.Debug(responseConfig)
+		// viper.Set("configInfo",responseConfig)
+		// viper.WriteConfig()
+		// viper.WatchConfig()
 	})
 	c.Start()
 

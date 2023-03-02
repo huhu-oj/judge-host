@@ -46,7 +46,7 @@ func (a *Router) RegisterAPI(app *gin.Engine) {
 		v1.POST("/test",a.JudgeAPI.Test)
 		common := v1.Group("/config")
 		{
-			common.GET("",a.CommonAPI.Config)
+			common.POST("",a.CommonAPI.Config)
 		}
 	} // v1 end
 }
