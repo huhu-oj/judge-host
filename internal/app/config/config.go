@@ -23,8 +23,8 @@ type Config struct {
 	CORS    CORS    `yaml:"cores"`
 	GZIP    GZIP    `yaml:"gzip"`
 	API     API     `yaml:"API"`
-	ConfigInfo ConfigInfo `yaml:"configInfo"`
-	Judge Judge `yaml:"judge"`
+	Info    Info    `yaml:"info"`
+	Judge   Judge   `yaml:"judge"`
 }
 type Judge struct {
 	ExecDir string `yaml:"execDir"`
@@ -32,11 +32,12 @@ type Judge struct {
 type API struct {
 	ManagerServer string `yaml:"managerServer"`
 }
-type ConfigInfo struct {
-	Id int `yaml:"id"`
-	Name string `yaml:"name"`
+type Info struct {
+	Id              int    `yaml:"id"`
+	Name            string `yaml:"name"`
 	SupportLanguage string `yaml:"supportLanguage"`
-	URL string `yaml:"url"`
+	Enabled         bool   `yaml:"enabled"`
+	URL             string `yaml:"url"`
 }
 type Log struct {
 	Level  string `yaml:"level"`

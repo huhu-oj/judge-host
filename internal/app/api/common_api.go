@@ -1,6 +1,11 @@
 package api
 
 import (
+	"encoding/json"
+	"github.com/menggggggg/go-web-template/internal/app/model"
+	"github.com/menggggggg/go-web-template/pkg/logger"
+	"github.com/spf13/viper"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,12 +25,15 @@ type CommonAPI struct {
 // @Router /api/v1/config [get]
 func (a *CommonAPI) Config(c *gin.Context) {
 	//接受后端新的配置
-	c.JSON(http.StatusOK, gin.H {
-
-	})
+	responseConfig := model.ConfigInfo{}
+	data, _ := io.ReadAll(c.Request.Body)
+	json.Unmarshal(data, &responseConfig)
+	logger.Debug(responseConfig)
+	viper.Set("info", responseConfig)
+	viper.WriteConfig()
+	viper.WatchConfig()
+	c.JSON(http.StatusOK, gin.H{})
 }
 func (a *CommonAPI) Health(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H {
-
-	})
+	c.JSON(http.StatusOK, gin.H{})
 }

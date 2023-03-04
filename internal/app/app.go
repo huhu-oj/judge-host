@@ -5,7 +5,8 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -17,7 +18,7 @@ import (
 	"github.com/menggggggg/go-web-template/internal/app/dao"
 	"github.com/menggggggg/go-web-template/internal/app/model"
 	"github.com/menggggggg/go-web-template/pkg/logger"
-	"github.com/spf13/viper"
+	//"github.com/spf13/viper"
 	"github.com/robfig/cron"
 )
 
@@ -41,7 +42,7 @@ func Init(ctx context.Context) (func(), error) {
 	InitGen()
 	dao.SetDefault(InitGormDB())
 	//定时发送心跳包
-	// SendHealth()
+	SendHealth()
 
 	return func() {
 		httpServerCleanFunc()
@@ -56,34 +57,42 @@ func SendHealth() {
 		//发送心跳
 		configInfo := model.ConfigInfo{
 			// Id: config.C.ConfigInfo.Id,
-			Name: config.C.ConfigInfo.Name,
-			SupportLanguage: config.C.ConfigInfo.SupportLanguage,
-			Enabled:         true,
-			URL:             config.C.ConfigInfo.URL,
+			Name:            config.C.Info.Name,
+			SupportLanguage: config.C.Info.SupportLanguage,
+			Enabled:         config.C.Info.Enabled,
+			URL:             GetIntranetIp() + config.C.HTTP.Addr,
 		}
 		requestBody, _ := json.Marshal(configInfo)
 		logger.Debug("准备发送心跳" + string(requestBody))
 
-		r, err := http.Post(serverApi, "application/json", bytes.NewReader(requestBody))
+		_, err := http.Post(serverApi, "application/json", bytes.NewReader(requestBody))
 		if err != nil {
 			logger.Error("后端连接失败" + err.Error())
 			return
 		}
-		_, err = ioutil.ReadAll(r.Body)
-		if err != nil {
-			logger.Error(err.Error())
-			return
-		}
-		// responseConfig := model.ConfigInfo{}
-		// json.Unmarshal(responseBody,&responseConfig)
-		// // logger.Debug(responseConfig)
-		// viper.Set("configInfo",responseConfig)
-		// viper.WriteConfig()
-		// viper.WatchConfig()
 	})
 	c.Start()
 
+}
+func GetIntranetIp() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
 
+	for _, address := range addrs {
+
+		// 检查ip地址判断是否回环地址
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				//fmt.Println("ip:", ipnet.IP.String())
+				return ipnet.IP.String()
+			}
+
+		}
+	}
+	return ""
 }
 func InitSwagger() {
 	cmd := exec.Command("swag", "init")
@@ -96,6 +105,7 @@ func InitSwagger() {
 	}
 	logger.Debug(out.String())
 }
+
 // InitHTTPServer 初始化http服务
 func InitHTTPServer(ctx context.Context, handler http.Handler) func() {
 	cfg := config.C.HTTP
@@ -106,7 +116,6 @@ func InitHTTPServer(ctx context.Context, handler http.Handler) func() {
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  30 * time.Second,
 	}
-
 
 	go func() {
 		logger.Infof("HTTP server is running at %s.", cfg.Addr)
