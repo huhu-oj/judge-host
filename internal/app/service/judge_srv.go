@@ -22,53 +22,57 @@ var JudgeSet = wire.NewSet(wire.Struct(new(JudgeSrv), "*"))
 
 type JudgeSrv struct {
 }
+
 const (
-	cpp = "cpp"
-	java = "java"
+	cpp    = "cpp"
+	java   = "java"
 	python = "python"
 	golang = "go"
 )
+
 // type Executor string
-// type language struct {
-// 	executor Executor
-// 	ext string
-// 	compile
-// }
+//
+//	type language struct {
+//		executor Executor
+//		ext string
+//		compile
+//	}
 func (a *JudgeSrv) Judge(ctx context.Context, request *model.AnswerRecord) {
 	//设置输入输出
 	ioList, err := dao.OjStandardIo.Where(dao.OjStandardIo.ProblemID.Eq(request.ProblemId)).Find()
 	if err != nil {
-		log.Fatalln("读取数据库失败"+err.Error())
-		return 
+		log.Fatalln("读取数据库失败" + err.Error())
+		return
 	}
 	// judge0(ioList,"main.go")
 
 	//保存成临时文件
-	f1, err := saveTempFile("","code","py",request.Code)
+	f1, err := saveTempFile("", "code", "py", request.Code)
 	if err != nil {
-		log.Fatalln("保存代码文件失败"+err.Error())
-		return 
+		log.Fatalln("保存代码文件失败" + err.Error())
+		return
 	}
 	//编译
 	// complie()
 	//执行 loop
-		//判断对错
+	//判断对错
 	for _, standardio := range ioList {
 		//执行
-		out,stderr := execCode(python,f1.Name(),standardio.Input)
+		out, stderr := execCode(python, f1.Name(), standardio.Input)
 		if stderr.Len() != 0 {
 			//有错误
 			request.Error = stderr.String()
+			request.ExecuteResultId = 3
 			return
 		}
-		formatOut :=strings.ReplaceAll(out.String(),"\n","")
+		formatOut := strings.ReplaceAll(out.String(), "\n", "")
 		//对比输出
-		if(strings.Compare(formatOut,standardio.Output) == 0) {
+		if strings.Compare(formatOut, standardio.Output) == 0 {
 			request.PassNum++
 		} else {
 			//不相等
-			request.Error = fmt.Sprintf("输入：%v\n期望输出：%v\n实际输出：%v",standardio.Input,standardio.Output,formatOut)
-			request.NotPassNum = len(ioList)-request.PassNum
+			request.Error = fmt.Sprintf("输入：%v\n期望输出：%v\n实际输出：%v", standardio.Input, standardio.Output, formatOut)
+			request.NotPassNum = len(ioList) - request.PassNum
 			request.ExecuteResultId = 2
 			return
 		}
@@ -77,36 +81,36 @@ func (a *JudgeSrv) Judge(ctx context.Context, request *model.AnswerRecord) {
 	//统计结果
 
 }
-func  (a *JudgeSrv) Test(request *model.AnswerRecord){
+func (a *JudgeSrv) Test(request *model.AnswerRecord) {
 	//保存成临时文件
-	f1, err := saveTempFile("","code","py",request.Code)
+	f1, err := saveTempFile("", "code", "py", request.Code)
 	if err != nil {
-		log.Fatalln("保存代码文件失败"+err.Error())
-		return 
+		log.Fatalln("保存代码文件失败" + err.Error())
+		return
 	}
 
 	//编译
 	//javac file
-	// f2, err1 := compile() 
+	// f2, err1 := compile()
 	// if err1 != nil {
 	// 	log.Fatalln("生成可执行文件失败"+err1.Error())
-	// 	return 
+	// 	return
 	// }
 	//执行
 	// cmd := exec.Command("go", "run", f1.Name())
-	out,stderr := execCode(python,f1.Name(),request.Input)
+	out, stderr := execCode(python, f1.Name(), request.Input)
 	//包装结果
 	request.Log = out.String()
 	request.Error = stderr.String()
 	//删除缓存文件
 	defer func() {
 		f1.Close()
-        os.Remove(f1.Name())
+		os.Remove(f1.Name())
 	}()
 }
 
-func saveTempFile(tempdir string,filename string, ext string, content string) (*os.File,error) {
-	file, err := ioutil.TempFile(tempdir, fmt.Sprintf("%v.*.%v",filename,ext))
+func saveTempFile(tempdir string, filename string, ext string, content string) (*os.File, error) {
+	file, err := ioutil.TempFile(tempdir, fmt.Sprintf("%v.*.%v", filename, ext))
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +121,7 @@ func saveTempFile(tempdir string,filename string, ext string, content string) (*
 	return file, nil
 
 }
-func execCode(executor string, execFilePath string, input string) (bytes.Buffer,bytes.Buffer){
+func execCode(executor string, execFilePath string, input string) (bytes.Buffer, bytes.Buffer) {
 	cmd := exec.Command(executor, execFilePath)
 	var out, stderr bytes.Buffer
 	cmd.Stderr = &stderr
@@ -130,9 +134,9 @@ func execCode(executor string, execFilePath string, input string) (bytes.Buffer,
 	if err := cmd.Run(); err != nil {
 		log.Println(err, stderr.String())
 	}
-	return out,stderr
+	return out, stderr
 }
-func judge0(standardIos []*model.OjStandardIo,path string) {
+func judge0(standardIos []*model.OjStandardIo, path string) {
 	// 答案错误的channel
 	WA := make(chan int)
 	// 超内存的channel
@@ -151,45 +155,45 @@ func judge0(standardIos []*model.OjStandardIo,path string) {
 	var msg string
 	for _, testCase := range standardIos {
 		testCase := testCase
-			go func() {
-				cmd := exec.Command("go", "run", path)
-				cmd.Dir = "cmd/go-web-template/main.go"
-				var out, stderr bytes.Buffer
-				cmd.Stderr = &stderr
-				cmd.Stdout = &out
-				stdinPipe, err := cmd.StdinPipe()
-				if err != nil {
-					log.Fatalln(err)
-				}
-				io.WriteString(stdinPipe, testCase.Input+"\n")
+		go func() {
+			cmd := exec.Command("go", "run", path)
+			cmd.Dir = "cmd/go-web-template/main.go"
+			var out, stderr bytes.Buffer
+			cmd.Stderr = &stderr
+			cmd.Stdout = &out
+			stdinPipe, err := cmd.StdinPipe()
+			if err != nil {
+				log.Fatalln(err)
+			}
+			io.WriteString(stdinPipe, testCase.Input+"\n")
 
-				var bm runtime.MemStats
-				runtime.ReadMemStats(&bm)
-				if err := cmd.Run(); err != nil {
-					log.Println(err, stderr.String())
-					if err.Error() == "exit status 2" {
-						msg = stderr.String()
-						CE <- 1
-						return
-					}
-				}
-				var em runtime.MemStats
-				runtime.ReadMemStats(&em)
-
-				// 答案错误
-				if testCase.Output != out.String() {
-					WA <- 1
+			var bm runtime.MemStats
+			runtime.ReadMemStats(&bm)
+			if err := cmd.Run(); err != nil {
+				log.Println(err, stderr.String())
+				if err.Error() == "exit status 2" {
+					msg = stderr.String()
+					CE <- 1
 					return
 				}
-				lock.Lock()
-				passCount++
-				if passCount == len(standardIos) {
-					AC <- 1
-				}
-				lock.Unlock()
-			}()
+			}
+			var em runtime.MemStats
+			runtime.ReadMemStats(&em)
+
+			// 答案错误
+			if testCase.Output != out.String() {
+				WA <- 1
+				return
+			}
+			lock.Lock()
+			passCount++
+			if passCount == len(standardIos) {
+				AC <- 1
+			}
+			lock.Unlock()
+		}()
 	}
-		
+
 	select {
 	case <-EC:
 		msg = "无效代码"
