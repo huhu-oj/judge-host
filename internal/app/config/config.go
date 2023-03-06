@@ -22,7 +22,7 @@ type Config struct {
 	Monitor Monitor `yaml:"monitor"`
 	CORS    CORS    `yaml:"cores"`
 	GZIP    GZIP    `yaml:"gzip"`
-	API     API     `yaml:"API"`
+	API     API     `yaml:"api"`
 	Info    Info    `yaml:"info"`
 	Judge   Judge   `yaml:"judge"`
 }
