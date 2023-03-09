@@ -22,8 +22,6 @@ monitor:
   addr: ":6060"
   configDir: ""
 
-judge:
-  execDir: D:\judgeTemp
 info:
   name: host-2
   supportlanguage: go,java
@@ -31,3 +29,8 @@ info:
   url: 192.168.0.168:8888
 api:
   managerserver: http://127.0.0.1:8000/api/judgeMachine/health
+language:
+  - java -version
+  - go version
+  - python -V
+  - pup -v

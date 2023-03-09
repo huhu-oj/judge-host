@@ -6,11 +6,15 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/spf13/viper"
+	"io"
+	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -41,6 +45,8 @@ func Init(ctx context.Context) (func(), error) {
 
 	InitGen()
 	dao.SetDefault(InitGormDB())
+	//检测环境
+	CheckAndInitCodeENV()
 	//定时发送心跳包
 	SendHealth()
 
@@ -48,6 +54,34 @@ func Init(ctx context.Context) (func(), error) {
 		httpServerCleanFunc()
 		monitorCleanFunc()
 	}, nil
+}
+
+func CheckAndInitCodeENV() {
+	var result []string
+	for _, l := range config.C.Language {
+		split := strings.Split(l, " ")
+		code := execCode(split[0], split[1], "")
+		if code == 0 {
+			result = append(result, split[0])
+		}
+	}
+	config.C.Info.SupportLanguage = strings.Join(result, ",")
+	logger.Debug(strings.Join(result, ","))
+	viper.Set("info", config.C.Info)
+	viper.WriteConfig()
+}
+func execCode(executor string, execFilePath string, input string) int {
+	cmd := exec.Command(executor, execFilePath)
+	stdinPipe, err := cmd.StdinPipe()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	io.WriteString(stdinPipe, input+"\n")
+	if err := cmd.Run(); err != nil {
+		log.Println(err)
+	}
+	//log.Println(cmd.ProcessState.ExitCode())
+	return cmd.ProcessState.ExitCode()
 }
 func SendHealth() {
 	c := cron.New()

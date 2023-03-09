@@ -14,21 +14,19 @@ var (
 )
 
 type Config struct {
-	RunMode string  `yaml:"runMode"`
-	Swagger bool    `yaml:"swagger"`
-	Log     Log     `yaml:"log"`
-	HTTP    HTTP    `yaml:"http"`
-	MySQL   MySQL   `yaml:"mysql"`
-	Monitor Monitor `yaml:"monitor"`
-	CORS    CORS    `yaml:"cores"`
-	GZIP    GZIP    `yaml:"gzip"`
-	API     API     `yaml:"api"`
-	Info    Info    `yaml:"info"`
-	Judge   Judge   `yaml:"judge"`
+	RunMode  string   `yaml:"runMode"`
+	Swagger  bool     `yaml:"swagger"`
+	Log      Log      `yaml:"log"`
+	HTTP     HTTP     `yaml:"http"`
+	MySQL    MySQL    `yaml:"mysql"`
+	Monitor  Monitor  `yaml:"monitor"`
+	CORS     CORS     `yaml:"cores"`
+	GZIP     GZIP     `yaml:"gzip"`
+	API      API      `yaml:"api"`
+	Info     Info     `yaml:"info"`
+	Language []string `yaml:"language"`
 }
-type Judge struct {
-	ExecDir string `yaml:"execDir"`
-}
+
 type API struct {
 	ManagerServer string `yaml:"managerServer"`
 }
