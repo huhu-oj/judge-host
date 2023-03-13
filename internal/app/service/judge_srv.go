@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -35,25 +37,25 @@ func (a *JudgeSrv) Judge(ctx context.Context, request *model.AnswerRecord) {
 	//设置输入输出
 	ioList, err := dao.OjStandardIo.Where(dao.OjStandardIo.ProblemID.Eq(request.ProblemId)).Find()
 	if err != nil {
-		log.Fatalln("读取数据库失败" + err.Error())
+		log.Println("读取数据库失败" + err.Error())
 		return
 	}
 	//获取语言
 	language, err := dao.OjLanguage.Where(dao.OjLanguage.ID.Eq(request.LanguageId)).First()
 	if err != nil {
-		log.Fatalln("获取语言出错" + err.Error())
+		log.Println("获取语言出错" + err.Error())
 		return
 	}
 	//获取执行者
 	executor, err := getExecutor(language)
 	if err != nil {
-		log.Fatalln("获取执行者出错" + err.Error())
+		log.Println("获取执行者出错" + err.Error())
 		return
 	}
 	//保存成临时文件夹
 	dir, err := createTempDir("code")
 	if err != nil {
-		log.Fatalln("保存代码文件失败" + err.Error())
+		log.Println("保存代码文件失败" + err.Error())
 		return
 	}
 	defer func() {
@@ -98,7 +100,7 @@ func (a *JudgeSrv) Judge(ctx context.Context, request *model.AnswerRecord) {
 func createTempDir(tempDirName string) (string, error) {
 	workDir, err := os.MkdirTemp("", tempDirName)
 	if err != nil {
-		log.Fatalln(err.Error())
+		log.Println(err.Error())
 		return "", err
 	}
 	return workDir, nil
@@ -121,7 +123,7 @@ func getExecutor(language *model.OjLanguage) (*config.Executor, error) {
 //			//append(c.Args,sourceFilePath)
 //			_, stderr, err := execCode(c.Cmd, "", c.Args...)
 //			if err != nil {
-//				log.Fatalln(stderr, err.Error())
+//				log.Println(stderr, err.Error())
 //				return "", err
 //			}
 //			c = c.Compile
@@ -132,24 +134,33 @@ func getExecutor(language *model.OjLanguage) (*config.Executor, error) {
 func execCompile(e config.Executor) {
 
 }
-func (a *JudgeSrv) Test(request *model.AnswerRecord) {
+func (a *JudgeSrv) Test(request *model.AnswerRecord, c *gin.Context) {
 
 	//获取语言
 	language, err := dao.OjLanguage.Where(dao.OjLanguage.ID.Eq(request.LanguageId)).First()
 	if err != nil {
-		log.Fatalln("获取语言出错" + err.Error())
+		log.Println("获取语言出错" + err.Error())
+		c.JSON(500, gin.H{
+			"message": "获取语言出错" + err.Error(),
+		})
 		return
 	}
 	//获取执行者
 	executor, err := getExecutor(language)
 	if err != nil {
-		log.Fatalln("获取执行者出错" + err.Error())
+		log.Println("获取执行者出错" + err.Error())
+		c.JSON(500, gin.H{
+			"message": "获取执行者出错" + err.Error(),
+		})
 		return
 	}
 	//保存成临时文件
 	f1, err := saveTempFile("", "code", executor.Ext, request.Code)
 	if err != nil {
-		log.Fatalln("保存代码文件失败" + err.Error())
+		log.Println("保存代码文件失败" + err.Error())
+		c.JSON(500, gin.H{
+			"message": "保存代码文件失败" + err.Error(),
+		})
 		return
 	}
 	//编译
@@ -162,10 +173,18 @@ func (a *JudgeSrv) Test(request *model.AnswerRecord) {
 	//执行
 	// cmd := exec.Command("go", "run", f1.Name())
 	out, stderr, err := execCode(executor.Cmd, request.Input, insert(executor.Args, len(executor.Args), f1.Name())...)
+	if err != nil {
+		log.Println("保存代码文件失败" + err.Error())
+		c.JSON(500, gin.H{
+			"message": "保存代码文件失败" + err.Error(),
+		})
+		return
+	}
 	//包装结果
-	println(out.String(), stderr.String())
 	request.Log = out.String()
 	request.Error = stderr.String()
+
+	c.JSON(http.StatusOK, request)
 	//删除缓存文件
 	defer func() {
 		f1.Close()
@@ -240,7 +259,7 @@ func judge0(standardIos []*model.OjStandardIo, path string) {
 			cmd.Stdout = &out
 			stdinPipe, err := cmd.StdinPipe()
 			if err != nil {
-				log.Fatalln(err)
+				log.Println(err)
 			}
 			io.WriteString(stdinPipe, testCase.Input+"\n")
 

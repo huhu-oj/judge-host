@@ -1,11 +1,11 @@
 package api
 
 import (
-	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
-	"github.com/menggggggg/go-web-template/internal/app/service"
 	"github.com/menggggggg/go-web-template/internal/app/model"
+	"github.com/menggggggg/go-web-template/internal/app/service"
+	"net/http"
 )
 
 var JudgeSet = wire.NewSet(wire.Struct(new(JudgeAPI), "*"))
@@ -30,7 +30,6 @@ func (a *JudgeAPI) Judge(c *gin.Context) {
 	c.JSON(http.StatusOK, answerRecord)
 }
 
-
 // Test
 // @Tags 自定义判题
 // @Summary 自定义判题
@@ -42,7 +41,6 @@ func (a *JudgeAPI) Test(c *gin.Context) {
 	answerRecord := &model.AnswerRecord{}
 	c.BindJSON(&answerRecord)
 	// fmt.Println(answerRecord)
-	a.JudgeSrv.Test(answerRecord)
+	a.JudgeSrv.Test(answerRecord, c)
 
-	c.JSON(http.StatusOK, answerRecord)
 }
