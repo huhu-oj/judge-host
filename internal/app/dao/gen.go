@@ -17,17 +17,20 @@ import (
 
 var (
 	Q            = new(Query)
+	OjLanguage   *ojLanguage
 	OjStandardIo *ojStandardIo
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	OjLanguage = &Q.OjLanguage
 	OjStandardIo = &Q.OjStandardIo
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:           db,
+		OjLanguage:   newOjLanguage(db, opts...),
 		OjStandardIo: newOjStandardIo(db, opts...),
 	}
 }
@@ -35,6 +38,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 type Query struct {
 	db *gorm.DB
 
+	OjLanguage   ojLanguage
 	OjStandardIo ojStandardIo
 }
 
@@ -43,6 +47,7 @@ func (q *Query) Available() bool { return q.db != nil }
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:           db,
+		OjLanguage:   q.OjLanguage.clone(db),
 		OjStandardIo: q.OjStandardIo.clone(db),
 	}
 }
@@ -58,16 +63,19 @@ func (q *Query) WriteDB() *Query {
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:           db,
+		OjLanguage:   q.OjLanguage.replaceDB(db),
 		OjStandardIo: q.OjStandardIo.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
+	OjLanguage   IOjLanguageDo
 	OjStandardIo IOjStandardIoDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
+		OjLanguage:   q.OjLanguage.WithContext(ctx),
 		OjStandardIo: q.OjStandardIo.WithContext(ctx),
 	}
 }

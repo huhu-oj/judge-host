@@ -34,3 +34,12 @@ language:
   - go version
   - python -V
   - pup -v
+executor:
+  - args: null
+    cmd: python
+    ext: py
+  - args:
+      - run
+    cmd: go
+    ext: go
+

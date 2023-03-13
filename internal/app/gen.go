@@ -1,11 +1,12 @@
 package app
+
 import (
 	// "fmt"
 	// "gorm.io/driver/mysql"
 	"gorm.io/gen"
 	// "gorm.io/gorm"
-
 )
+
 // const MysqlConfig = "root:birthdayis1123@(43.139.47.68:3306)/eladmin?charset=utf8mb4&parseTime=True&loc=Local"
 
 func InitGen() {
@@ -40,8 +41,9 @@ func InitGen() {
 	//softDeleteField := gen.FieldType("delete_time", "soft_delete.DeletedAt")
 	//fieldOpts := []gen.ModelOpt{jsonField, autoCreateTimeField, autoUpdateTimeField, softDeleteField}
 	osi := g.GenerateModel("oj_standard_io")
+	ol := g.GenerateModel("oj_language")
 	//allModel := g.GenerateAllTable(fieldOpts...)
-	g.ApplyBasic(osi)
+	g.ApplyBasic(osi, ol)
 	//g.ApplyBasic(allModel...)
 
 	g.Execute()

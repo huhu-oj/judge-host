@@ -14,19 +14,25 @@ var (
 )
 
 type Config struct {
-	RunMode  string   `yaml:"runMode"`
-	Swagger  bool     `yaml:"swagger"`
-	Log      Log      `yaml:"log"`
-	HTTP     HTTP     `yaml:"http"`
-	MySQL    MySQL    `yaml:"mysql"`
-	Monitor  Monitor  `yaml:"monitor"`
-	CORS     CORS     `yaml:"cores"`
-	GZIP     GZIP     `yaml:"gzip"`
-	API      API      `yaml:"api"`
-	Info     Info     `yaml:"info"`
-	Language []string `yaml:"language"`
+	RunMode  string     `yaml:"runMode"`
+	Swagger  bool       `yaml:"swagger"`
+	Log      Log        `yaml:"log"`
+	HTTP     HTTP       `yaml:"http"`
+	MySQL    MySQL      `yaml:"mysql"`
+	Monitor  Monitor    `yaml:"monitor"`
+	CORS     CORS       `yaml:"cores"`
+	GZIP     GZIP       `yaml:"gzip"`
+	API      API        `yaml:"api"`
+	Info     Info       `yaml:"info"`
+	Language []string   `yaml:"language"`
+	Executor []Executor `yaml:"executor"`
 }
-
+type Executor struct {
+	Cmd  string   `yaml:"cmd"`
+	Args []string `yaml:"args"`
+	Ext  string   `yaml:"ext"`
+	//Compile *Executor `yaml:"compile"`
+}
 type API struct {
 	ManagerServer string `yaml:"managerServer"`
 }
